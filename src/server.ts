@@ -3,6 +3,7 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 
 import { handleVoiceRequest } from "./api/voiceHandler";
+import { uploadAudio } from "./api/uploadAudio";
 
 
 dotenv.config();
@@ -23,6 +24,12 @@ app.get("/health", (_, res) => {
 });
 
 app.post("/voice", handleVoiceRequest);
+
+app.post(
+  "/upload-audio",
+  express.raw({ type: ["audio/wav"], limit: "10mb" }),
+  uploadAudio
+);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
