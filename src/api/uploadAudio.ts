@@ -7,6 +7,9 @@ const s3 = new S3Client({
 });
 
 export async function uploadAudio(req: Request, res: Response): Promise<void> {
+    console.log("Content-Type:", req.headers["content-type"]);
+console.log("Is Buffer:", Buffer.isBuffer(req.body));
+console.log("Body length:", req.body?.length);
   try {
     // Debug: log headers and body type/length
     console.log("/upload-audio headers:", req.headers);
