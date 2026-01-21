@@ -56,6 +56,7 @@ export async function speechToText(s3Url: string): Promise<string> {
     new StartTranscriptionJobCommand({
       TranscriptionJobName: jobName,
       LanguageCode: "en-US",
+      MediaFormat: "webm",
       Media: {
         MediaFileUri: s3Url
       },

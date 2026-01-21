@@ -44,9 +44,9 @@ console.log("Body length:", req.body?.length);
       })
     );
 
-    res.json({
-      audioUrl: `s3://${BUCKET_NAME}/${key}`
-    });
+   const audioUrl = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+    res.json({ audioUrl });
 
   } catch (error) {
     console.error("Upload error:", error);

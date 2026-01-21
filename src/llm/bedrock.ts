@@ -1,46 +1,33 @@
-import {
-  BedrockRuntimeClient,
-  InvokeModelCommand
-} from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 
-const client = new BedrockRuntimeClient({ region: "us-east-1" });
+const client = new BedrockRuntimeClient({
+  region: process.env.AWS_REGION
+});
 
-// export async function askLLM(userText: string, context = "") {
-//   const prompt = `
-// You are an AI voice assistant.
+export async function askLLM(prompt: string): Promise<string> {
+  const body = JSON.stringify({
+    messages: [
+      {
+        role: "user",
+        content: [{ type: "text", text: prompt }]
+      }
+    ],
+    max_tokens: 512,
+    temperature: 0.7,
+    top_p: 0.9
+  });
 
-// Rules:
-// - Be concise
-// - Ask one question at a time
-// - No medical advice
+  const command = new InvokeModelCommand({
+    modelId: "google.gemma-3-4b-it",
+    contentType: "application/json",
+    accept: "application/json",
+    body
+  });
 
-// Context:
-// ${context}
+  const response = await client.send(command);
 
-// User:
-// ${userText}
-// `;
+  const raw = new TextDecoder().decode(response.body);
+  const json = JSON.parse(raw);
 
-//   const body = JSON.stringify({
-//     prompt,
-//     max_tokens_to_sample: 300,
-//     temperature: 0.2
-//   });
-
-//   const command = new InvokeModelCommand({
-//     modelId: "anthropic.claude-v2",
-//     contentType: "application/json",
-//     accept: "application/json",
-//     body
-//   });
-
-//   const response = await client.send(command);
-//   const result = JSON.parse(Buffer.from(response.body).toString());
-
-//   return result.completion;
-// }
-
-export async function askLLM(userText: string): Promise<string> {
-  console.log("🧠 Mock LLM called with:", userText);
-  return "Hi! I am your AI voice assistant.";
+  return json.choices[0].message.content;
 }
