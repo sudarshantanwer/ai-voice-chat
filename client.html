@@ -1,99 +1,272 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>AI Voice Assistant</title>
+
   <style>
+    :root {
+      --blue: #4f46e5;
+      --purple: #7c3aed;
+      --pink: #ec4899;
+      --bg-dark: #0f172a;
+      --glass: rgba(255, 255, 255, 0.15);
+      --border: rgba(255, 255, 255, 0.25);
+      --text-soft: #cbd5f5;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #1e1b4b, #020617);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: white;
     }
-    #status {
-      margin-top: 12px;
-      font-weight: bold;
+
+    .card {
+      width: 460px;
+      padding: 36px;
+      border-radius: 20px;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.18),
+        rgba(255,255,255,0.08)
+      );
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+      text-align: center;
     }
-    .loading {
-      color: orange;
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      background: linear-gradient(90deg, #a5b4fc, #f0abfc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .success {
-      color: green;
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--text-soft);
+    }
+
+    .mic {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #06b6d4); /* blue → teal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 28px auto;
+  font-size: 36px;
+  box-shadow: 0 0 32px rgba(37, 99, 235, 0.45);
+  transition: all 0.3s ease;
+}
+
+.mic.recording {
+  animation: pulse 1.2s infinite;
+  background: linear-gradient(135deg, #0ea5e9, #22d3ee); /* lighter blue while recording */
+  box-shadow: 0 0 48px rgba(14, 165, 233, 0.7);
+}
+
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .controls {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    button {
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    #start {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+    }
+
+    #start:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(99,102,241,0.5);
+    }
+
+    #stop {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+
+    #stop:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .status {
+      min-height: 26px;
+      font-size: 14px;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .wave {
+      display: flex;
+      gap: 4px;
+    }
+
+    .wave span {
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(180deg, #a5b4fc, #f0abfc);
+      animation: wave 1s infinite ease-in-out;
+    }
+
+    .wave span:nth-child(2) { animation-delay: 0.1s; }
+    .wave span:nth-child(3) { animation-delay: 0.2s; }
+    .wave span:nth-child(4) { animation-delay: 0.3s; }
+
+    @keyframes wave {
+      0%, 100% { height: 10px; }
+      50% { height: 24px; }
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 14px;
+      border-radius: 12px;
+    }
+
+    .done {
+      color: var(--success);
+      font-weight: 600;
     }
   </style>
 </head>
+
 <body>
-  <h2>🎙️ AI Voice Assistant</h2>
+  <div class="card">
+    <h1>AI Voice Assistant</h1>
+    <div class="subtitle">Speak naturally. AI listens & replies.</div>
 
-  <button id="start">Start Talking</button>
-  <button id="stop" disabled>Stop</button>
+    <div id="mic" class="mic">🎙️</div>
 
-  <div id="status"></div>
+    <div class="controls">
+      <button id="start">Start</button>
+      <button id="stop" disabled>Stop</button>
+    </div>
 
-  <audio id="reply" controls></audio>
+    <div id="status" class="status"></div>
+
+    <audio id="reply" controls></audio>
+  </div>
 
   <script>
-    let recorder;
-    let chunks = [];
+  let recorder;
+  let chunks = [];
 
-    const startBtn = document.getElementById("start");
-    const stopBtn = document.getElementById("stop");
-    const status = document.getElementById("status");
-    const replyPlayer = document.getElementById("reply");
+  const startBtn = document.getElementById("start");
+  const stopBtn = document.getElementById("stop");
+  const statusEl = document.getElementById("status");
+  const replyPlayer = document.getElementById("reply");
+  const mic = document.getElementById("mic");
 
-    function setStatus(text, type = "") {
-      status.textContent = text;
-      status.className = type;
-    }
+  function setStatus(text, wave = false) {
+    statusEl.innerHTML = wave
+      ? `<div class="wave"><span></span><span></span><span></span><span></span></div>${text}`
+      : text;
+  }
 
-    startBtn.onclick = async () => {
-      setStatus("🎙️ Recording...", "loading");
+  startBtn.onclick = async () => {
+    mic.classList.add("recording");
+    setStatus("🎙️ Listening…");
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-      chunks = [];
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    chunks = [];
 
-      recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.ondataavailable = e => chunks.push(e.data);
 
-      recorder.onstop = async () => {
-        setStatus("⏳ Processing your voice...", "loading");
+    recorder.onstop = async () => {
+      mic.classList.remove("recording");
 
-        const blob = new Blob(chunks, { type: "audio/webm" });
+      // STAGE 1 — Uploading
+      setStatus("📤 Uploading audio…", true);
 
-        // 1️⃣ Upload audio
-        const uploadRes = await fetch("http://localhost:3000/upload-audio", {
-          method: "POST",
-          headers: { "Content-Type": "audio/webm" },
-          body: blob
-        });
+      const blob = new Blob(chunks, { type: "audio/webm" });
 
-        const { audioUrl } = await uploadRes.json();
+      const uploadRes = await fetch("http://localhost:3000/upload-audio", {
+        method: "POST",
+        headers: { "Content-Type": "audio/webm" },
+        body: blob
+      });
 
-        // 2️⃣ Call voice pipeline
-        const voiceRes = await fetch("http://localhost:3000/voice", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ audioUrl })
-        });
+      const { audioUrl } = await uploadRes.json();
 
-        setStatus("🔊 AI is speaking...", "loading");
+      // STAGE 2 — Transcribing
+      setStatus("📝 Transcribing your voice…", true);
 
-        const audioBlob = await voiceRes.blob();
-        replyPlayer.src = URL.createObjectURL(audioBlob);
-        replyPlayer.play();
+      // Small intentional delay (feels natural)
+      await new Promise(r => setTimeout(r, 600));
 
-        replyPlayer.onended = () => {
-          setStatus("✅ Done", "success");
-        };
+      // STAGE 3 — Thinking
+      setStatus("🧠 Thinking…", true);
+
+      const voiceRes = await fetch("http://localhost:3000/voice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioUrl })
+      });
+
+      // STAGE 4 — Speaking
+      setStatus("🔊 Speaking…", true);
+
+      const audioBlob = await voiceRes.blob();
+      replyPlayer.src = URL.createObjectURL(audioBlob);
+      replyPlayer.play();
+
+      replyPlayer.onended = () => {
+        setStatus("✅ Done");
       };
-
-      recorder.start();
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
     };
 
-    stopBtn.onclick = () => {
-      recorder.stop();
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      setStatus("⏳ Processing...", "loading");
-    };
-  </script>
+    recorder.start();
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+  };
+
+  stopBtn.onclick = () => {
+    recorder.stop();
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+  };
+</script>
+
 </body>
 </html>
