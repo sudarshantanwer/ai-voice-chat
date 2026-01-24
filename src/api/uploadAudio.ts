@@ -32,15 +32,14 @@ console.log("Body length:", req.body?.length);
       res.status(500).json({ error: "AUDIO_BUCKET_NAME env variable not set" });
       return;
     }
-
-    const key = `audio/${uuid()}.wav`;
+    const key = `audio/${uuid()}.webm`;
 
     await s3.send(
       new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: key,
         Body: audioBuffer,
-        ContentType: "audio/wav"
+        ContentType: "audio/webm"
       })
     );
 

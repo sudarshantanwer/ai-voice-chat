@@ -53,16 +53,16 @@ export async function speechToText(s3Url: string): Promise<string> {
   const jobName = `job-${Date.now()}`;
 
   await transcribe.send(
-    new StartTranscriptionJobCommand({
-      TranscriptionJobName: jobName,
-      LanguageCode: "en-US",
-      MediaFormat: "webm",
-      Media: {
-        MediaFileUri: s3Url
-      },
-      OutputBucketName: process.env.AUDIO_BUCKET_NAME
-    })
-  );
+  new StartTranscriptionJobCommand({
+    TranscriptionJobName: jobName,
+    LanguageCode: "en-US",
+    MediaFormat: "webm",
+    Media: {
+      MediaFileUri: s3Url
+    },
+    OutputBucketName: process.env.AUDIO_BUCKET_NAME
+  })
+);
 
   while (true) {
     const result = await transcribe.send(
