@@ -221,7 +221,7 @@
 
       const blob = new Blob(chunks, { type: "audio/webm" });
 
-      const uploadRes = await fetch("http://localhost:3000/upload-audio", {
+      const uploadRes = await fetch("/upload-audio", {
         method: "POST",
         headers: { "Content-Type": "audio/webm" },
         body: blob
@@ -238,7 +238,7 @@
       // STAGE 3 — Thinking
       setStatus("🧠 Thinking…", true);
 
-      const voiceRes = await fetch("http://localhost:3000/voice", {
+      const voiceRes = await fetch("/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audioUrl })

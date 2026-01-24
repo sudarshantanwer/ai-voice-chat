@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import * as dotenv from "dotenv";
+import path from "path";
 
 import { handleVoiceRequest } from "./api/voiceHandler";
 import { uploadAudio } from "./api/uploadAudio";
@@ -8,12 +9,17 @@ import { speechToText } from "./stt/transcribe";
 import { askLLM } from "./llm/bedrock";
 import { textToSpeech } from "./tts/polly";
 
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+
+const __dirname = new URL('.', import.meta.url).pathname;
+
+app.use(express.static(path.join(__dirname, "../public")));
 
 /**
  * 🔥 RAW AUDIO (PATH-SCOPED)
