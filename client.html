@@ -2,12 +2,29 @@
 <html>
 <head>
   <title>AI Voice Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #status {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    .loading {
+      color: orange;
+    }
+    .success {
+      color: green;
+    }
+  </style>
 </head>
 <body>
   <h2>🎙️ AI Voice Assistant</h2>
 
   <button id="start">Start Talking</button>
   <button id="stop" disabled>Stop</button>
+
+  <div id="status"></div>
 
   <audio id="reply" controls></audio>
 
@@ -17,17 +34,26 @@
 
     const startBtn = document.getElementById("start");
     const stopBtn = document.getElementById("stop");
+    const status = document.getElementById("status");
     const replyPlayer = document.getElementById("reply");
 
-    startBtn.onclick = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    function setStatus(text, type = "") {
+      status.textContent = text;
+      status.className = type;
+    }
 
+    startBtn.onclick = async () => {
+      setStatus("🎙️ Recording...", "loading");
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
       chunks = [];
 
       recorder.ondataavailable = e => chunks.push(e.data);
 
       recorder.onstop = async () => {
+        setStatus("⏳ Processing your voice...", "loading");
+
         const blob = new Blob(chunks, { type: "audio/webm" });
 
         // 1️⃣ Upload audio
@@ -38,7 +64,6 @@
         });
 
         const { audioUrl } = await uploadRes.json();
-        console.log("Uploaded:", audioUrl);
 
         // 2️⃣ Call voice pipeline
         const voiceRes = await fetch("http://localhost:3000/voice", {
@@ -47,10 +72,15 @@
           body: JSON.stringify({ audioUrl })
         });
 
-        // 3️⃣ Play AI voice
+        setStatus("🔊 AI is speaking...", "loading");
+
         const audioBlob = await voiceRes.blob();
         replyPlayer.src = URL.createObjectURL(audioBlob);
         replyPlayer.play();
+
+        replyPlayer.onended = () => {
+          setStatus("✅ Done", "success");
+        };
       };
 
       recorder.start();
@@ -62,6 +92,7 @@
       recorder.stop();
       startBtn.disabled = false;
       stopBtn.disabled = true;
+      setStatus("⏳ Processing...", "loading");
     };
   </script>
 </body>
