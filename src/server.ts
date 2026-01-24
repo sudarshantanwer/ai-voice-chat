@@ -15,19 +15,32 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-// 🔥 Binary upload route FIRST
-app.post(
+/**
+ * 🔥 RAW AUDIO (PATH-SCOPED)
+ * This GUARANTEES req.body is a Buffer for /upload-audio
+ */
+app.use(
   "/upload-audio",
   express.raw({
-    type: ["audio/wav", "audio/x-wav"],
+    type: "audio/webm",
     limit: "20mb"
-  }),
-  uploadAudio
+  })
 );
 
-// JSON parser AFTER binary route
+/**
+ * ✅ JSON for everything else
+ */
 app.use(express.json());
 
+/**
+ * ROUTES
+ */
+app.post("/upload-audio", uploadAudio);
+app.post("/voice", handleVoiceRequest);
+
+/**
+ * HEALTH
+ */
 app.get("/", (_req, res) => {
   res.send("AI Voice Assistant is running 🚀");
 });
@@ -36,8 +49,9 @@ app.get("/health", (_, res) => {
   res.json({ status: "ok" });
 });
 
-app.post("/voice", handleVoiceRequest);
-
+/**
+ * 🔬 TEST ROUTES (KEEP FOR NOW)
+ */
 app.post("/stt-test", async (req, res) => {
   try {
     const { audioUrl } = req.body;
@@ -79,6 +93,9 @@ app.post("/tts-test", async (req, res) => {
   }
 });
 
+/**
+ * 🚀 START
+ */
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

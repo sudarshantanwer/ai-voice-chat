@@ -4,44 +4,62 @@
   <title>AI Voice Assistant</title>
 </head>
 <body>
-  <h2>Voice Test</h2>
-  <button id="start">Start Recording</button>
-  <button id="stop" disabled>Stop Recording</button>
-  <audio id="player" controls></audio>
+  <h2>🎙️ AI Voice Assistant</h2>
+
+  <button id="start">Start Talking</button>
+  <button id="stop" disabled>Stop</button>
+
+  <audio id="reply" controls></audio>
 
   <script>
-    let mediaRecorder;
+    let recorder;
     let chunks = [];
 
     const startBtn = document.getElementById("start");
     const stopBtn = document.getElementById("stop");
-    const player = document.getElementById("player");
+    const replyPlayer = document.getElementById("reply");
 
     startBtn.onclick = async () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
+
+      recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
       chunks = [];
 
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: "audio/wav" });
-        player.src = URL.createObjectURL(blob);
+      recorder.ondataavailable = e => chunks.push(e.data);
 
-        // Send to backend
-        await fetch("http://localhost:3000/upload-audio", {
+      recorder.onstop = async () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+
+        // 1️⃣ Upload audio
+        const uploadRes = await fetch("http://localhost:3000/upload-audio", {
           method: "POST",
-          headers: { "Content-Type": "audio/wav" },
+          headers: { "Content-Type": "audio/webm" },
           body: blob
-        }).then(r => r.json()).then(console.log);
+        });
+
+        const { audioUrl } = await uploadRes.json();
+        console.log("Uploaded:", audioUrl);
+
+        // 2️⃣ Call voice pipeline
+        const voiceRes = await fetch("http://localhost:3000/voice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioUrl })
+        });
+
+        // 3️⃣ Play AI voice
+        const audioBlob = await voiceRes.blob();
+        replyPlayer.src = URL.createObjectURL(audioBlob);
+        replyPlayer.play();
       };
 
-      mediaRecorder.start();
+      recorder.start();
       startBtn.disabled = true;
       stopBtn.disabled = false;
     };
 
     stopBtn.onclick = () => {
-      mediaRecorder.stop();
+      recorder.stop();
       startBtn.disabled = false;
       stopBtn.disabled = true;
     };
