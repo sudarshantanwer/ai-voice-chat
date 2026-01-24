@@ -8,39 +8,36 @@ import { textToSpeech } from "../tts/polly";
  * Handles AI voice requests:
  * S3 Audio → STT (Transcribe) → LLM (Bedrock) → TTS (Polly) → Audio response
  */
-export async function handleVoiceRequest(
-  req: Request,
-  res: Response
-): Promise<void> {
+export async function handleVoiceRequest(req: Request, res: Response): Promise<void> {
   try {
-    // 1. Receive audio URL (already uploaded to S3)
-    const { audioUrl } = req.body as { audioUrl?: string };
+    const { audioUrl } = req.body;
 
-    if (!audioUrl) {
-      res.status(400).json({ error: "audioUrl is required" });
-      return;
-    }
+    console.log("VOICE START");
+    console.log("Audio URL:", audioUrl);
 
-    // 2. Speech → Text
-    const userText: string = await speechToText(audioUrl);
+    // 1️⃣ STT
+    console.log("STT: starting");
+    const userText = await speechToText(audioUrl);
+    console.log("STT result:", userText);
 
-    // 3. LLM reasoning
-    const replyText: string = await askLLM(userText);
+    // 2️⃣ LLM
+    console.log("LLM: starting");
+    const replyText = await askLLM(userText);
+    console.log("LLM result:", replyText);
 
-    // 4. Text → Speech (normalized Node.js stream)
+    // 3️⃣ TTS
+    console.log("TTS: starting");
     const audioStream = await textToSpeech(replyText);
+    console.log("TTS: stream ready");
 
-    // 5. Stream audio back to client
     res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Transfer-Encoding", "chunked");
-
     audioStream.pipe(res);
 
   } catch (error) {
-    console.error("Voice handler error:", error);
-
-    if (!res.headersSent) {
-      res.status(500).json({ error: "Voice processing failed" });
-    }
+    console.error("VOICE ERROR:", error);
+    res.status(500).json({
+      error: "Voice processing failed",
+      details: error instanceof Error ? error.message : String(error)
+    });
   }
 }

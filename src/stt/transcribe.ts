@@ -75,10 +75,12 @@ export async function speechToText(s3Url: string): Promise<string> {
     if (!job) throw new Error("No transcription job");
 
     if (job.TranscriptionJobStatus === "FAILED") {
+      console.error("TRANSCRIBE FAILED:", job.FailureReason);
       throw new Error(job.FailureReason || "Transcribe failed");
     }
 
     if (job.TranscriptionJobStatus === "COMPLETED") {
+      console.log("TRANSCRIBE COMPLETED:", job.Transcript);
       const uri = job.Transcript!.TranscriptFileUri!;
 
       const { bucket, key } = parseS3Url(uri);
