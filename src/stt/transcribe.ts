@@ -53,16 +53,16 @@ export async function speechToText(s3Url: string): Promise<string> {
   const jobName = `job-${Date.now()}`;
 
   await transcribe.send(
-    new StartTranscriptionJobCommand({
-      TranscriptionJobName: jobName,
-      LanguageCode: "en-US",
-      MediaFormat: "webm",
-      Media: {
-        MediaFileUri: s3Url
-      },
-      OutputBucketName: process.env.AUDIO_BUCKET_NAME
-    })
-  );
+  new StartTranscriptionJobCommand({
+    TranscriptionJobName: jobName,
+    LanguageCode: "en-US",
+    MediaFormat: "webm",
+    Media: {
+      MediaFileUri: s3Url
+    },
+    OutputBucketName: process.env.AUDIO_BUCKET_NAME
+  })
+);
 
   while (true) {
     const result = await transcribe.send(
@@ -75,10 +75,12 @@ export async function speechToText(s3Url: string): Promise<string> {
     if (!job) throw new Error("No transcription job");
 
     if (job.TranscriptionJobStatus === "FAILED") {
+      console.error("TRANSCRIBE FAILED:", job.FailureReason);
       throw new Error(job.FailureReason || "Transcribe failed");
     }
 
     if (job.TranscriptionJobStatus === "COMPLETED") {
+      console.log("TRANSCRIBE COMPLETED:", job.Transcript);
       const uri = job.Transcript!.TranscriptFileUri!;
 
       const { bucket, key } = parseS3Url(uri);
