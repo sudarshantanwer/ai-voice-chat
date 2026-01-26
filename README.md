@@ -1,9 +1,3 @@
-Perfect 👍
-Below is a **production-grade, detailed README** you can directly copy into `README.md`.
-It’s written for **GitHub / portfolio / recruiters / developers**, not fluffy marketing.
-
----
-
 # 🎙️ GenAI Voice Chat Assistant
 
 A **full-stack GenAI voice assistant** that listens to your voice, understands your query, and responds back in **AI-generated speech** — end to end.
@@ -15,7 +9,7 @@ This application captures audio from the browser, transcribes it using **AWS Tra
 ## 🚀 Live Demo
 
 > 🔗 **Live URL**: (Railway deployment)
-> *(Access may be limited to control cloud costs)*
+> *(Access is limited to control cloud costs)*
 
 ---
 
@@ -271,13 +265,3 @@ If you’re exploring:
 
 This project is a solid **reference implementation**.
 
----
-
-If you want, I can also:
-
-* Rewrite this for **recruiters**
-* Make a **short README**
-* Add **architecture diagrams**
-* Prepare **LinkedIn / portfolio description**
-
-Just tell me 👍
