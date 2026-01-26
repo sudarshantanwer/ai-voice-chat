@@ -8,6 +8,9 @@ This application captures audio from the browser, transcribes it using **AWS Tra
 
 ## 🚀 Live Demo
 
+<img width="575" height="568" alt="image" src="https://github.com/user-attachments/assets/1afc5d5c-6f4c-42f9-b6be-e01555dfbd6a" />
+
+
 > 🔗 **Live URL**: (Railway deployment)
 > *(Access is limited to control cloud costs)*
 
